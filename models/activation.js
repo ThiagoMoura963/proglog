@@ -1,6 +1,7 @@
 import email from "infra/email.js";
 import database from "infra/database.js";
 import webserver from "infra/webserver.js";
+import { NotFoundError } from "infra/errors.js";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000;
 
@@ -27,27 +28,44 @@ async function create(userId) {
   }
 }
 
-async function findOneByUserId(userId) {
-  const newToken = await runSelectQuery(userId);
-  return newToken;
+async function findOneValidById(tokenId) {
+  const userFound = await runSelectQuery(tokenId);
+  return userFound;
 
-  async function runSelectQuery(userId) {
+  async function runSelectQuery(tokenId) {
     const results = await database.query({
       text: `
-        SELECT 
+        SELECT
           *
-        FROM 
+        FROM
           user_activation_tokens
         WHERE
-          user_id = $1
-        LIMIT
+          id = $1
+          AND expires_at > NOW()
+          AND used_at IS NULL
+        LIMIT 
           1
         ;`,
-      values: [userId],
+      values: [tokenId],
     });
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message:
+          "O token de ativação utilizado não foi encontrado no sistema ou expirou.",
+        action: "Faça um novo cadastro.",
+      });
+    }
 
     return results.rows[0];
   }
+}
+
+function extractUUID(text) {
+  const regex =
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+  const match = text.match(regex);
+  return match ? match[0] : null;
 }
 
 async function sendEmailToUser(user, activationToken) {
@@ -55,7 +73,7 @@ async function sendEmailToUser(user, activationToken) {
     from: "Fluxo Logistico <contato.fluxologistico@gmail.com>",
     to: user.email,
     subject: "Ative seu cadastro no Fluxo Logistico!",
-    text: ` ${user.username}, clique no link abaixo para ativar seu cadastro no Fluxo Logistico
+    text: `${user.username}, clique no link abaixo para ativar seu cadastro no Fluxo Logistico
 
 ${webserver.origin}/cadastro/ativar/${activationToken.id}
 
@@ -67,7 +85,8 @@ Equipe Fluxo Logistico
 
 const activation = {
   create,
-  findOneByUserId,
+  findOneValidById,
+  extractUUID,
   sendEmailToUser,
 };
 
