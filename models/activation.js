@@ -2,6 +2,7 @@ import email from "infra/email.js";
 import database from "infra/database.js";
 import webserver from "infra/webserver.js";
 import { NotFoundError } from "infra/errors.js";
+import user from "models/user.js";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000;
 
@@ -29,8 +30,8 @@ async function create(userId) {
 }
 
 async function findOneValidById(tokenId) {
-  const userFound = await runSelectQuery(tokenId);
-  return userFound;
+  const activationTokenObject = await runSelectQuery(tokenId);
+  return activationTokenObject;
 
   async function runSelectQuery(tokenId) {
     const results = await database.query({
@@ -61,6 +62,35 @@ async function findOneValidById(tokenId) {
   }
 }
 
+async function markTokenAsUsed(activationTokenId) {
+  const usedActivationToken = await runUpdateQuery(activationTokenId);
+  return usedActivationToken;
+
+  async function runUpdateQuery(activationTokenId) {
+    const results = await database.query({
+      text: `
+        UPDATE 
+          user_activation_tokens
+        SET 
+          used_at = timezone('utc', now()),
+          updated_at = timezone('utc', now())
+        WHERE
+          id = $1
+        RETURNING
+          *
+        ;`,
+      values: [activationTokenId],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function activateUserByUserId(userId) {
+  const activatedUser = await user.setFeatures(userId, ["create:session"]);
+  return activatedUser;
+}
+
 function extractUUID(text) {
   const regex =
     /[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}/i;
@@ -86,6 +116,8 @@ Equipe Fluxo Logistico
 const activation = {
   create,
   findOneValidById,
+  markTokenAsUsed,
+  activateUserByUserId,
   extractUUID,
   sendEmailToUser,
 };
