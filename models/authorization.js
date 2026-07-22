@@ -1,4 +1,33 @@
+import { InternalServerError } from "infra/errors.js";
+
+const availableFeatures = [
+  //USER
+  "create:user",
+  "read:user",
+  "read:user:self",
+  "update:user",
+  "update:user:others",
+
+  //SESSION
+  "create:session",
+  "read:session",
+
+  //ACTIVATION_TOKEN
+  "read:activation_token",
+
+  //MIGRATION
+  "create:migration",
+  "read:migration",
+
+  //STATUS
+  "read:status",
+  "read:status:all",
+];
+
 function can(user, feature, resource) {
+  validateUser(user);
+  validateFeature(feature);
+
   let authorized = false;
 
   if (user.features.includes(feature)) {
@@ -17,6 +46,10 @@ function can(user, feature, resource) {
 }
 
 function filterOutput(user, feature, resource) {
+  validateUser(user);
+  validateFeature(feature);
+  validResource(resource);
+
   if (feature === "read:user") {
     return {
       id: resource.id,
@@ -53,7 +86,7 @@ function filterOutput(user, feature, resource) {
     }
   }
 
-  if (feature === "read:activation_tokens") {
+  if (feature === "read:activation_token") {
     return {
       id: resource.id,
       user_id: resource.user_id,
@@ -86,12 +119,36 @@ function filterOutput(user, feature, resource) {
     };
 
     if (can(user, "read:status:all")) {
-      console.log("Passou do IF");
       output.dependencies.database.version =
         resource.dependencies.database.version;
     }
 
     return output;
+  }
+}
+
+function validateUser(user) {
+  if (!user || !user.features) {
+    throw new InternalServerError({
+      cause: "É necessário fornecer um `user` no model `authorization`.",
+    });
+  }
+}
+
+function validateFeature(feature) {
+  if (!feature || !availableFeatures.includes(feature)) {
+    throw new InternalServerError({
+      cause:
+        "É necessário fornecer uma `feature` conhecida no model `authorization`.",
+    });
+  }
+}
+
+function validResource(resource) {
+  if (!resource) {
+    throw new InternalServerError({
+      cause: "É necessário fornecer um `resource` em `filterOutput()`.",
+    });
   }
 }
 
