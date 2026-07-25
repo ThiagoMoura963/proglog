@@ -7,7 +7,7 @@ function getOrigin() {
     return `https://${process.env.VERCEL_URL}`;
   }
 
-  return "https://fluxo-logistico.vercel.app";
+  return "https://proglog.com.br";
 }
 
 const webserver = {
