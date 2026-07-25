@@ -5,6 +5,7 @@ import database from "infra/database";
 import migrator from "models/migrator.js";
 import user from "models/user.js";
 import session from "models/session.js";
+import activation from "models/activation.js";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -60,8 +61,17 @@ async function createUser(userObject) {
   });
 }
 
+async function activateUser(userId) {
+  return await activation.activateUserByUserId(userId);
+}
+
 async function createSession(userId) {
   return await session.create(userId);
+}
+
+async function addFeaturesToUser(userObject, features) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
 }
 
 async function deleteAllEmails() {
@@ -74,6 +84,10 @@ async function getLastEmail() {
   const emailListResponse = await fetch(`${emailHttpUrl}/messages`);
   const emailListBody = await emailListResponse.json();
   const lastEmailItem = emailListBody.pop();
+
+  if (!lastEmailItem) {
+    return null;
+  }
 
   const emailTextResponse = await fetch(
     `${emailHttpUrl}/messages/${lastEmailItem.id}.plain`,
@@ -89,7 +103,9 @@ const orchestrator = {
   clearDatabase,
   runPendingMigrations,
   createUser,
+  activateUser,
   createSession,
+  addFeaturesToUser,
   deleteAllEmails,
   getLastEmail,
 };
