@@ -114,15 +114,15 @@ function extractUUID(text) {
 
 async function sendEmailToUser(user, activationToken) {
   await email.send({
-    from: "Fluxo Logistico <contato.fluxologistico@gmail.com>",
+    from: "ProgLog <contato@proglog.com.br>",
     to: user.email,
-    subject: "Ative seu cadastro no Fluxo Logistico!",
-    text: `${user.username}, clique no link abaixo para ativar seu cadastro no Fluxo Logistico
+    subject: "Ative seu cadastro no ProgLog!",
+    text: `${user.username}, clique no link abaixo para ativar seu cadastro no ProgLog:
 
 ${webserver.origin}/cadastro/ativar/${activationToken.id}
 
 Atenciosamente,
-Equipe Fluxo Logistico
+Equipe ProgLog
     `,
   });
 }
