@@ -48,6 +48,7 @@ export default function RegisterPage() {
       });
 
       if (response.status === 201) {
+        localStorage.setItem("registrationEmail", email);
         await router.push("/cadastro/confirmar");
         return;
       }
