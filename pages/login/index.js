@@ -1,15 +1,16 @@
-import DefaultLayout from "interface/DefaultLayout/index.js";
-import FormField from "interface/FormField/index.js";
-
-import { useRef, useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/router";
+import useUser from "interface/hooks/useUser/index.js";
+
+import DefaultLayout from "interface/DefaultLayout";
+import FormField from "interface/FormField/index.js";
 import { Button, Heading, Stack, TextInput } from "@primer/react";
 import { EyeIcon, EyeClosedIcon } from "@primer/octicons-react";
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter();
+  const { fetchUser } = useUser();
 
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +18,7 @@ export default function RegisterPage() {
 
   const passwordInputRef = useRef(null);
 
-  function focusAfterEnd() {
+  function FocusAfterEnd() {
     setTimeout(() => {
       const input = passwordInputRef.current;
       const len = input.value.length;
@@ -26,10 +27,10 @@ export default function RegisterPage() {
     });
   }
 
-  function handleTogglePassword(event) {
+  function handleTogglePssword(event) {
     event.preventDefault();
     setShowPassword((prev) => !prev);
-    focusAfterEnd();
+    FocusAfterEnd();
   }
 
   async function handleSubmit(event) {
@@ -38,8 +39,8 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const requestBody = { username, email, password };
-      const response = await fetch("/api/v1/users", {
+      const requestBody = { email, password };
+      const response = await fetch("/api/v1/sessions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,62 +49,50 @@ export default function RegisterPage() {
       });
 
       if (response.status === 201) {
-        localStorage.setItem("registrationEmail", email);
-        await router.push("/cadastro/confirmar");
-        return;
+        await fetchUser();
+        router.replace("/");
       }
 
       setIsLoading(false);
-    } catch (error) {
-      console.error(error);
+    } catch {
       setIsLoading(false);
     }
   }
 
   return (
-    <DefaultLayout title="Cadastro">
-      <Stack align="center">
-        <Heading as="h1">Cadastro</Heading>
-
+    <DefaultLayout title="Login">
+      <Stack align="center" padding="spacious">
+        <Heading as="h1">Login</Heading>
         <form
           onSubmit={handleSubmit}
-          style={{ width: "100%", maxWidth: "400px" }}
+          style={{ maxWidth: "400px", width: "100%" }}
         >
           <Stack gap="normal">
             <FormField
-              label="Nome de usuário"
-              size="large"
-              autoComplete="username"
-              type="text"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-            />
-
-            <FormField
               label="Email"
+              type="text"
               size="large"
               autoComplete="email"
-              type="text"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-
             <FormField
               ref={passwordInputRef}
               label="Senha"
               size="large"
               type={showPassword ? "text" : "password"}
+              autoComplete="password"
               value={password}
-              autoComplete="new-password"
               onChange={(event) => setPassword(event.target.value)}
               trailingAction={
                 <TextInput.Action
-                  onClick={handleTogglePassword}
                   icon={showPassword ? EyeIcon : EyeClosedIcon}
+                  onClick={handleTogglePssword}
                   aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
                 />
               }
             />
+
             <Button
               block
               type="submit"
@@ -112,7 +101,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               loading={isLoading}
             >
-              Criar cadastro
+              Entrar
             </Button>
           </Stack>
         </form>

@@ -1,7 +1,7 @@
 import { MailIcon } from "@primer/octicons-react";
 import { Blankslate } from "@primer/react/experimental";
 
-import DefaultLayout from "pages/interface/DefaultLayout/index.js";
+import DefaultLayout from "interface/DefaultLayout/index.js";
 
 export default function ConfirmRegisterPage() {
   return (

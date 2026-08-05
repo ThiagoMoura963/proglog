@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 
-import DefaultLayout from "pages/interface/DefaultLayout/index.js";
+import DefaultLayout from "interface/DefaultLayout/index.js";
 import { Banner, Spinner, Stack } from "@primer/react";
 import { useState, useEffect } from "react";
 
