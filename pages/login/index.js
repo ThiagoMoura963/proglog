@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/router";
-import useUser from "pages/interface/hooks/useUser/index.js";
+import useUser from "interface/hooks/useUser/index.js";
 
-import DefaultLayout from "pages/interface/DefaultLayout";
-import FormField from "pages/interface/FormField/index.js";
+import DefaultLayout from "interface/DefaultLayout";
+import FormField from "interface/FormField/index.js";
 import { Button, Heading, Stack, TextInput } from "@primer/react";
 import { EyeIcon, EyeClosedIcon } from "@primer/octicons-react";
 

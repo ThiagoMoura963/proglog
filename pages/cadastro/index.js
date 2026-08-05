@@ -1,5 +1,5 @@
-import DefaultLayout from "pages/interface/DefaultLayout/index.js";
-import FormField from "pages/interface/FormField/index.js";
+import DefaultLayout from "interface/DefaultLayout/index.js";
+import FormField from "interface/FormField/index.js";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/router";
