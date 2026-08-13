@@ -33,6 +33,72 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
       });
     });
 
+    test("With malformed number token", async () => {
+      const malformedToken = 1000000;
+
+      const response = await fetch(
+        `${webserver.origin}/api/v1/activations/${malformedToken}`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "token_id",
+      });
+    });
+
+    test("With malformed string token", async () => {
+      const malformedToken = "1000000";
+      const response = await fetch(
+        `${webserver.origin}/api/v1/activations/${malformedToken}`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "token_id",
+      });
+    });
+
+    test("With token null", async () => {
+      const response = await fetch(
+        `${webserver.origin}/api/v1/activations/${null}`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"token_id" deve possuir um token UUID na versão 4.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "token_id",
+      });
+    });
+
     test("With expired token", async () => {
       jest.useFakeTimers({
         now: new Date(Date.now() - activation.EXPIRATION_IN_MILLISECONDS),
