@@ -68,6 +68,106 @@ describe("POST /api/v1/sessions", () => {
       });
     });
 
+    test("With correct `email` but without `password`", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "valid.email@gmail.com",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"password" é um campo obrigatório.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "password",
+      });
+    });
+
+    test("With correct `email` but empty `password`", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "email.valid@gmail.com",
+          password: "",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"password" não pode estar em branco.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "password",
+      });
+    });
+
+    test("With correct `email` but small `password`", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "valid.email@gmail.com",
+          password: "small",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"password" deve conter no mínimo 8 caracteres.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "password",
+      });
+    });
+
+    test("With correct `email` but too long `password`", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "valid.email@gmail.com",
+          password:
+            "toolllllllllllllloooooooooooooooooooooooooooonggggggggggggggggggggggggggg",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"password" deve conter no máximo 72 caracteres.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "password",
+      });
+    });
+
     test("With incorrect `email` and incorret `password`", async () => {
       await orchestrator.createUser();
 
@@ -91,6 +191,80 @@ describe("POST /api/v1/sessions", () => {
         message: "Dados de autenticação não conferem.",
         action: "Verifique se os dados enviados estão corretos.",
         status_code: 401,
+      });
+    });
+
+    test("With correct `password` but invalid `email`", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "invalid.email",
+          password: "validPassword",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"email" deve conter um email válido.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "email",
+      });
+    });
+
+    test("With correct `password` but without email", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: "validPassword",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"email" é um campo obrigatório.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "email",
+      });
+    });
+
+    test("With correct `password` but empty email", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: "",
+          password: "validPassword",
+        }),
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"email" não pode estar em branco.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "email",
       });
     });
 

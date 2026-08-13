@@ -12,6 +12,47 @@ beforeAll(async () => {
 
 describe("GET /api/v1/user", () => {
   describe("Anonymous user", () => {
+    test("Retrieving the endpoint with malformatted `session_id` (too long)", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/user`, {
+        headers: {
+          Cookie:
+            "session_id=tolongggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+        },
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"session_id" deve possuir 96 caracteres.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "session_id",
+      });
+    });
+
+    test("Retrieving the endpoint with malformatted `session_id` (too small)", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/user`, {
+        headers: {
+          Cookie: "session_id=tosmall",
+        },
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"session_id" deve possuir 96 caracteres.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "session_id",
+      });
+    });
+
     test("Retrieving the endpoint", async () => {
       const response = await fetch(`${webserver.origin}/api/v1/user`);
 
