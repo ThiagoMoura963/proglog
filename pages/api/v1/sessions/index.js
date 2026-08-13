@@ -3,6 +3,7 @@ import controller from "infra/controller.js";
 import authentication from "models/authentication.js";
 import session from "models/session.js";
 import authorization from "models/authorization.js";
+import validator from "models/validator.js";
 
 import { ForbiddenError } from "infra/errors.js";
 
@@ -14,10 +15,14 @@ export default createRouter()
 
 async function postHandler(request, response) {
   const userInputValues = request.body;
+  const cleanValues = validator(userInputValues, {
+    email: true,
+    password: true,
+  });
 
   const authenticatedUser = await authentication.getUser(
-    userInputValues.email,
-    userInputValues.password,
+    cleanValues.email,
+    cleanValues.password,
   );
 
   if (!authorization.can(authenticatedUser, "create:session")) {

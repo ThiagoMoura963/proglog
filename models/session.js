@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import database from "infra/database.js";
+import validator from "models/validator.js";
 import { UnauthorizedError } from "infra/errors.js";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000;
@@ -29,6 +30,8 @@ async function create(userId) {
 }
 
 async function findOneValidByToken(sessionToken) {
+  validator({ session_id: sessionToken }, { session_id: true });
+
   const sessionFound = await runSelectQuery(sessionToken);
   return sessionFound;
 

@@ -11,6 +11,50 @@ beforeAll(async () => {
 });
 
 describe("DELETE /api/v1/sessions", () => {
+  describe("Anonymous user", () => {
+    test("With malformatted `session_id` (too long)", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "DELETE",
+        headers: {
+          Cookie: `session_id=tolongggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg`,
+        },
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"session_id" deve possuir 96 caracteres.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "session_id",
+      });
+    });
+
+    test("With malformatted `session_id` (too small)", async () => {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
+        method: "DELETE",
+        headers: {
+          Cookie: `session_id=tosmall`,
+        },
+      });
+
+      expect(response.status).toBe(400);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ValidationError",
+        message: '"session_id" deve possuir 96 caracteres.',
+        action: "Ajuste os dados enviados e tente novamente.",
+        status_code: 400,
+        key: "session_id",
+      });
+    });
+  });
+
   describe("Default user", () => {
     test("With nonexistent session", async () => {
       const nonexistentToken =
