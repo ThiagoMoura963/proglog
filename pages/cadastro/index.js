@@ -1,9 +1,10 @@
 import DefaultLayout from "interface/DefaultLayout/index.js";
 import FormField from "interface/FormField/index.js";
+import { createErrorMessage } from "interface/index.js";
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { Button, Heading, Stack, TextInput } from "@primer/react";
+import { Button, Heading, Stack, TextInput, Banner } from "@primer/react";
 import { EyeIcon, EyeClosedIcon } from "@primer/octicons-react";
 
 export default function RegisterPage() {
@@ -14,6 +15,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [globalMessage, setGlobalMessage] = useState(null);
+
+  const KNOW_FIELDS = ["username", "email", "password"];
 
   const passwordInputRef = useRef(null);
 
@@ -47,10 +52,22 @@ export default function RegisterPage() {
         body: JSON.stringify(requestBody),
       });
 
+      const responseBody = await response.json();
+
       if (response.status === 201) {
         localStorage.setItem("registrationEmail", email);
         await router.push("/cadastro/confirmar");
         return;
+      }
+
+      if (response.status === 400 && KNOW_FIELDS.includes(responseBody.key)) {
+        setFieldErrors({
+          [responseBody.key]: createErrorMessage(responseBody, {
+            omitAction: true,
+          }),
+        });
+      } else {
+        setGlobalMessage(createErrorMessage(requestBody));
       }
 
       setIsLoading(false);
@@ -77,6 +94,7 @@ export default function RegisterPage() {
               type="text"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
+              error={fieldErrors.username}
             />
 
             <FormField
@@ -86,6 +104,7 @@ export default function RegisterPage() {
               type="text"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              error={fieldErrors.email}
             />
 
             <FormField
@@ -96,6 +115,7 @@ export default function RegisterPage() {
               value={password}
               autoComplete="new-password"
               onChange={(event) => setPassword(event.target.value)}
+              error={fieldErrors.password}
               trailingAction={
                 <TextInput.Action
                   onClick={handleTogglePassword}
@@ -104,6 +124,11 @@ export default function RegisterPage() {
                 />
               }
             />
+
+            {globalMessage && (
+              <Banner variant="critical" title={globalMessage} />
+            )}
+
             <Button
               block
               type="submit"
