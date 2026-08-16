@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/router";
 import useUser from "interface/hooks/useUser/index.js";
+import { createErrorMessage } from "interface/index.js";
 
 import DefaultLayout from "interface/DefaultLayout";
 import FormField from "interface/FormField/index.js";
-import { Button, Heading, Stack, TextInput } from "@primer/react";
+import { Button, Heading, Stack, TextInput, Banner } from "@primer/react";
 import { EyeIcon, EyeClosedIcon } from "@primer/octicons-react";
 
 export default function LoginPage() {
@@ -15,6 +16,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [globalMessage, setGlobalMessage] = useState(null);
+
+  const KNOW_FIELDS = ["email", "password"];
 
   const passwordInputRef = useRef(null);
 
@@ -48,10 +53,26 @@ export default function LoginPage() {
         body: JSON.stringify(requestBody),
       });
 
+      const responseBody = await response.json();
+
       if (response.status === 201) {
         await fetchUser();
         router.replace("/");
       }
+
+      if (response.status === 400 && KNOW_FIELDS.includes(responseBody.key)) {
+        setFieldErrors({
+          [responseBody.key]: createErrorMessage(responseBody, {
+            omitAction: true,
+          }),
+        });
+      } else {
+        setGlobalMessage(createErrorMessage(responseBody));
+      }
+
+      console.log("key:", responseBody.key);
+
+      console.log(fieldErrors);
 
       setIsLoading(false);
     } catch {
@@ -75,6 +96,7 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+              error={fieldErrors.email}
             />
             <FormField
               ref={passwordInputRef}
@@ -84,6 +106,7 @@ export default function LoginPage() {
               autoComplete="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              error={fieldErrors.password}
               trailingAction={
                 <TextInput.Action
                   icon={showPassword ? EyeIcon : EyeClosedIcon}
@@ -92,6 +115,10 @@ export default function LoginPage() {
                 />
               }
             />
+
+            {globalMessage && (
+              <Banner variant="critical" title={globalMessage} />
+            )}
 
             <Button
               block
