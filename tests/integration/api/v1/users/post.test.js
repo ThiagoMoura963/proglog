@@ -67,6 +67,7 @@ describe("POST /api/v1/users", () => {
           username: "emailduplicado1",
           email: "duplicado@email.com",
           password: "senhaSegura123",
+          key: "email",
         }),
       });
 
@@ -93,6 +94,7 @@ describe("POST /api/v1/users", () => {
         message: "O email informado já está sendo utilizado.",
         action: "Utilize outro email para realizar esta operação.",
         status_code: 400,
+        key: "email",
       });
     });
 
@@ -337,6 +339,7 @@ describe("POST /api/v1/users", () => {
           username: "usernameduplicado",
           email: "duplicado1@email.com",
           password: "senhaSegura123",
+          key: "username",
         }),
       });
 
@@ -363,6 +366,7 @@ describe("POST /api/v1/users", () => {
         message: "O username informado já está sendo utilizado.",
         action: "Utilize outro username para realizar esta operação.",
         status_code: 400,
+        key: "username",
       });
     });
   });

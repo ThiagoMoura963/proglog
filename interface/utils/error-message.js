@@ -4,6 +4,9 @@ export default function createErrorMessage(
 ) {
   const { message, action } = responseBody || {};
 
+  console.log(message);
+  console.log(action);
+
   const errorMessages = [];
 
   if (message) {
@@ -13,6 +16,8 @@ export default function createErrorMessage(
   if (action && !omitAction) {
     errorMessages.push(action);
   }
+
+  console.log(errorMessages);
 
   return (
     errorMessages.join(" ") || "Erro desconhecido. Tente novamente mais tarde."
