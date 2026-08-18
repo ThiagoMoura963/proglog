@@ -5,7 +5,13 @@ import DefaultLayout from "interface/DefaultLayout/index.js";
 
 export default function ConfirmRegisterPage() {
   return (
-    <DefaultLayout>
+    <DefaultLayout
+      metadata={{
+        title: "Login",
+        description:
+          "Enviamos um email de confirmação. Acesse sua caixa de entrada e clique no link para ativar sua conta.",
+      }}
+    >
       <Blankslate spacious>
         <Blankslate.Visual>
           <MailIcon size="medium" />

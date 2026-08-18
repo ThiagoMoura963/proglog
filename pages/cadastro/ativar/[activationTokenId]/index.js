@@ -52,7 +52,12 @@ export default function ActivationPage() {
   }, [router.isReady, activationTokenId]);
 
   return (
-    <DefaultLayout title="Ativar conta">
+    <DefaultLayout
+      metadata={{
+        title: "Ativar cadastro",
+        description: "Estamos ativando seu cadastro. Aguarde um instante.",
+      }}
+    >
       {isLoading && (
         <Stack align="center" padding="spacious">
           <Spinner size="medium" />
