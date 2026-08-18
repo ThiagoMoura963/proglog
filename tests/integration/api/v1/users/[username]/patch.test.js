@@ -3,6 +3,7 @@ import orchestrator from "tests/orchestrator.js";
 import user from "models/user.js";
 import password from "models/password.js";
 import webserver from "infra/webserver.js";
+import activation from "models/activation.js";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -102,6 +103,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         message: "O username informado já está sendo utilizado.",
         action: "Utilize outro username para realizar esta operação.",
         status_code: 400,
+        key: "username",
       });
     });
 
@@ -178,6 +180,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         message: "O email informado já está sendo utilizado.",
         action: "Utilize outro email para realizar esta operação.",
         status_code: 400,
+        key: "email",
       });
     });
 
@@ -207,7 +210,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: "uniqueUser2",
-        features: ["create:session", "read:session", "update:user"],
+        features: activation.ACTIVATION_FEATURES,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -245,7 +248,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: createdUser.username,
-        features: ["create:session", "read:session", "update:user"],
+        features: activation.ACTIVATION_FEATURES,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -289,7 +292,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: createdUser.username,
-        features: ["create:session", "read:session", "update:user"],
+        features: activation.ACTIVATION_FEATURES,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -312,6 +315,46 @@ describe("PATCH /api/v1/users/[username]", () => {
 
       expect(correctPasswordMatch).toBe(true);
       expect(incorrectPasswordMatch).toBe(false);
+    });
+
+    test("With same `username` but different case", async () => {
+      const createdUser = await orchestrator.createUser({
+        username: "REGULARuser",
+      });
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
+
+      const response = await fetch(
+        `${webserver.origin}/api/v1/users/${createdUser.username}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
+          },
+          body: JSON.stringify({
+            username: "regularuser",
+          }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        id: responseBody.id,
+        username: "regularuser",
+        features: activation.ACTIVATION_FEATURES,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+
+      expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
   });
 
