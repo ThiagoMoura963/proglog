@@ -3,6 +3,7 @@ import setCookieParser from "set-cookie-parser";
 import orchestrator from "tests/orchestrator.js";
 import session from "models/session.js";
 import webserver from "infra/webserver.js";
+import activation from "models/activation.js";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -98,7 +99,7 @@ describe("GET /api/v1/user", () => {
         id: createdUser.id,
         username: "UserWithValidSession",
         email: createdUser.email,
-        features: ["create:session", "read:session", "update:user"],
+        features: activation.ACTIVATION_FEATURES,
         created_at: createdUser.created_at.toISOString(),
         updated_at: activatedUser.updated_at.toISOString(),
       });
@@ -247,7 +248,7 @@ describe("GET /api/v1/user", () => {
         id: createdUser.id,
         username: "UserWithExpiringSession",
         email: createdUser.email,
-        features: ["create:session", "read:session", "update:user"],
+        features: activation.ACTIVATION_FEATURES,
         created_at: createdUser.created_at.toISOString(),
         updated_at: activatedUser.updated_at.toISOString(),
       });

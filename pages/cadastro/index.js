@@ -8,6 +8,25 @@ import { Button, Heading, Stack, TextInput, Banner } from "@primer/react";
 import { EyeIcon, EyeClosedIcon } from "@primer/octicons-react";
 
 export default function RegisterPage() {
+  return (
+    <DefaultLayout
+      contentWidth="small"
+      metadata={{
+        title: "Cadastro",
+        description: "Crie sua conta de forma gratuita.",
+      }}
+    >
+      <Stack gap="spacious">
+        <Heading as="h1" style={{ textAlign: "center" }}>
+          Cadastro
+        </Heading>
+        <RegisterForm />
+      </Stack>
+    </DefaultLayout>
+  );
+}
+
+function RegisterForm() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
@@ -67,7 +86,7 @@ export default function RegisterPage() {
           }),
         });
       } else {
-        setGlobalMessage(createErrorMessage(requestBody));
+        setGlobalMessage(createErrorMessage(responseBody));
       }
 
       setIsLoading(false);
@@ -78,70 +97,59 @@ export default function RegisterPage() {
   }
 
   return (
-    <DefaultLayout title="Cadastro">
-      <Stack align="center">
-        <Heading as="h1">Cadastro</Heading>
+    <form onSubmit={handleSubmit}>
+      <Stack gap="normal">
+        <FormField
+          label="Nome de usuário"
+          size="large"
+          autoComplete="username"
+          type="text"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          error={fieldErrors.username}
+        />
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ width: "100%", maxWidth: "400px" }}
+        <FormField
+          label="Email"
+          size="large"
+          autoComplete="email"
+          type="text"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          error={fieldErrors.email}
+        />
+
+        <FormField
+          ref={passwordInputRef}
+          label="Senha"
+          size="large"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          autoComplete="new-password"
+          onChange={(event) => setPassword(event.target.value)}
+          error={fieldErrors.password}
+          trailingAction={
+            <TextInput.Action
+              onClick={handleTogglePassword}
+              icon={showPassword ? EyeIcon : EyeClosedIcon}
+              aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+            />
+          }
+        />
+
+        {globalMessage && <Banner variant="critical" title={globalMessage} />}
+
+        <Button
+          block
+          type="submit"
+          variant="primary"
+          size="large"
+          disabled={isLoading}
+          loading={isLoading}
         >
-          <Stack gap="normal">
-            <FormField
-              label="Nome de usuário"
-              size="large"
-              autoComplete="username"
-              type="text"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              error={fieldErrors.username}
-            />
-
-            <FormField
-              label="Email"
-              size="large"
-              autoComplete="email"
-              type="text"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              error={fieldErrors.email}
-            />
-
-            <FormField
-              ref={passwordInputRef}
-              label="Senha"
-              size="large"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              autoComplete="new-password"
-              onChange={(event) => setPassword(event.target.value)}
-              error={fieldErrors.password}
-              trailingAction={
-                <TextInput.Action
-                  onClick={handleTogglePassword}
-                  icon={showPassword ? EyeIcon : EyeClosedIcon}
-                  aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
-                />
-              }
-            />
-
-            {globalMessage && (
-              <Banner variant="critical" title={globalMessage} />
-            )}
-
-            <Button
-              block
-              type="submit"
-              variant="primary"
-              size="large"
-              disabled={isLoading}
-              loading={isLoading}
-            >
-              Criar cadastro
-            </Button>
-          </Stack>
-        </form>
+          Criar cadastro
+        </Button>
       </Stack>
-    </DefaultLayout>
+    </form>
   );
 }

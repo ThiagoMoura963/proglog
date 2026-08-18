@@ -73,7 +73,7 @@ async function renew(sessionId) {
           sessions
         SET
           expires_at = $2,
-          updated_at = NOW()
+          updated_at = timezone('utc', now())
         WHERE 
           id = $1
         RETURNING
@@ -97,11 +97,11 @@ async function expireById(sessionId) {
           sessions
         SET
           expires_at = expires_at - interval '1 year',
-          updated_at = NOW()
+          updated_at = timezone('utc', now())
         WHERE
           id = $1
         RETURNING
-         *
+          *
         ;`,
       values: [sessionId],
     });

@@ -9,6 +9,25 @@ import { Button, Heading, Stack, TextInput, Banner } from "@primer/react";
 import { EyeIcon, EyeClosedIcon } from "@primer/octicons-react";
 
 export default function LoginPage() {
+  return (
+    <DefaultLayout
+      contentWidth="small"
+      metadata={{
+        title: "Login",
+        description: "Faça login na sua conta para acessar a plataforma.",
+      }}
+    >
+      <Stack padding="spacious">
+        <Heading as="h1" style={{ textAlign: "center" }}>
+          Login
+        </Heading>
+        <LoginForm />
+      </Stack>
+    </DefaultLayout>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const { fetchUser } = useUser();
 
@@ -70,10 +89,6 @@ export default function LoginPage() {
         setGlobalMessage(createErrorMessage(responseBody));
       }
 
-      console.log("key:", responseBody.key);
-
-      console.log(fieldErrors);
-
       setIsLoading(false);
     } catch {
       setIsLoading(false);
@@ -81,58 +96,48 @@ export default function LoginPage() {
   }
 
   return (
-    <DefaultLayout title="Login">
-      <Stack align="center" padding="spacious">
-        <Heading as="h1">Login</Heading>
-        <form
-          onSubmit={handleSubmit}
-          style={{ maxWidth: "400px", width: "100%" }}
+    <form onSubmit={handleSubmit} style={{ maxWidth: "400px", width: "100%" }}>
+      <Stack gap="normal">
+        <FormField
+          label="Email"
+          type="text"
+          size="large"
+          autoComplete="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          error={fieldErrors.email}
+        />
+        <FormField
+          ref={passwordInputRef}
+          label="Senha"
+          size="large"
+          type={showPassword ? "text" : "password"}
+          autoComplete="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          error={fieldErrors.password}
+          trailingAction={
+            <TextInput.Action
+              icon={showPassword ? EyeIcon : EyeClosedIcon}
+              onClick={handleTogglePssword}
+              aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
+            />
+          }
+        />
+
+        {globalMessage && <Banner variant="critical" title={globalMessage} />}
+
+        <Button
+          block
+          type="submit"
+          variant="primary"
+          size="large"
+          disabled={isLoading}
+          loading={isLoading}
         >
-          <Stack gap="normal">
-            <FormField
-              label="Email"
-              type="text"
-              size="large"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              error={fieldErrors.email}
-            />
-            <FormField
-              ref={passwordInputRef}
-              label="Senha"
-              size="large"
-              type={showPassword ? "text" : "password"}
-              autoComplete="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              error={fieldErrors.password}
-              trailingAction={
-                <TextInput.Action
-                  icon={showPassword ? EyeIcon : EyeClosedIcon}
-                  onClick={handleTogglePssword}
-                  aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
-                />
-              }
-            />
-
-            {globalMessage && (
-              <Banner variant="critical" title={globalMessage} />
-            )}
-
-            <Button
-              block
-              type="submit"
-              variant="primary"
-              size="large"
-              disabled={isLoading}
-              loading={isLoading}
-            >
-              Entrar
-            </Button>
-          </Stack>
-        </form>
+          Entrar
+        </Button>
       </Stack>
-    </DefaultLayout>
+    </form>
   );
 }

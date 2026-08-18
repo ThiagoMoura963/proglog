@@ -130,7 +130,9 @@ async function update(username, userInputValues) {
   }
 
   if ("username" in userInputValues) {
-    await validadeUniqueUsername(userInputValues.username);
+    if (userInputValues.username.toLowerCase() !== username.toLowerCase()) {
+      await validadeUniqueUsername(userInputValues.username);
+    }
   }
 
   if ("password" in userInputValues) {
@@ -186,6 +188,7 @@ async function validadeUniqueEmail(email) {
     throw new ValidationError({
       message: "O email informado já está sendo utilizado.",
       action: "Utilize outro email para realizar esta operação.",
+      key: "email",
     });
   }
 }
@@ -207,6 +210,7 @@ async function validadeUniqueUsername(username) {
     throw new ValidationError({
       message: "O username informado já está sendo utilizado.",
       action: "Utilize outro username para realizar esta operação.",
+      key: "username",
     });
   }
 }

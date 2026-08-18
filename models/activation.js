@@ -7,6 +7,8 @@ import authorization from "./authorization.js";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000;
 
+const ACTIVATION_FEATURES = ["create:session", "read:session", "update:user"];
+
 async function create(userId) {
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
@@ -97,11 +99,7 @@ async function activateUserByUserId(userId) {
     });
   }
 
-  const activatedUser = await user.setFeatures(userId, [
-    "create:session",
-    "read:session",
-    "update:user",
-  ]);
+  const activatedUser = await user.setFeatures(userId, ACTIVATION_FEATURES);
   return activatedUser;
 }
 
@@ -135,6 +133,7 @@ const activation = {
   extractUUID,
   sendEmailToUser,
   EXPIRATION_IN_MILLISECONDS,
+  ACTIVATION_FEATURES,
 };
 
 export default activation;

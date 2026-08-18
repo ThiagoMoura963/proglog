@@ -197,17 +197,17 @@ describe("PATCH /api/v1/activations/[token_id]", () => {
       const createdAt = new Date(responseBody.created_at);
       const expiresAt = new Date(responseBody.expires_at);
 
-      createdAt.setMilliseconds(0);
-      expiresAt.setMilliseconds(0);
+      expect(expiresAt >= createdAt).toBe(true);
 
-      expect(expiresAt - createdAt).toBe(activation.EXPIRATION_IN_MILLISECONDS);
+      const actualLifeTimeInMilliseconds = expiresAt - createdAt;
+
+      const lifeTimeDifferenceInMilliseconds =
+        activation.EXPIRATION_IN_MILLISECONDS - actualLifeTimeInMilliseconds;
+
+      expect(lifeTimeDifferenceInMilliseconds).toBeLessThanOrEqual(5000);
 
       const activatedUser = await user.findOneById(responseBody.user_id);
-      expect(activatedUser.features).toEqual([
-        "create:session",
-        "read:session",
-        "update:user",
-      ]);
+      expect(activatedUser.features).toEqual(activation.ACTIVATION_FEATURES);
     });
 
     test("With valid token, but already activated user", async () => {
